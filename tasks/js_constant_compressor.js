@@ -7,15 +7,13 @@
  */
 'use strict';
 
-var sortObject = require('sortobject');
-
 module.exports = function(grunt) {
 
   // Please see the Grunt documentation for more information regarding
   // task creation: http://gruntjs.com/creating-tasks
 
-  var nameMapper = {};
-  var valueMapper = {};
+  var nameMapper = [];
+  var valueMapper = [];
   var ix = 0;
   var iy = 0;
 
@@ -92,27 +90,32 @@ module.exports = function(grunt) {
       grunt.log.warn('SPA source file "' + options.spaSource + '" not found.');
     } else {
 
-      var vMapper = sortObject(valueMapper);
-      var nMapper = sortObject(nameMapper);
+      // Sort mappers by values in revers order.
+      valueMapper.sort(function (a, b) {
+        if (a.name > b.name) { return -1; }
+        if (a.name < b.name) { return 1; }
+        return 0; // a must be equal to b
+      });
+      nameMapper.sort(function (a, b) {
+        if (a.name > b.name) { return -1; }
+        if (a.name < b.name) { return 1; }
+        return 0; // a must be equal to b
+      });
 
       // Read SPA source file.
       var spaSource = grunt.file.read(options.spaSource);
 
       // Replace constant values.
-      for (var vProperty in vMapper) {
-        if (vMapper.hasOwnProperty(vProperty)) {
-          var re = new RegExp(escapeRegExp('\'' + vProperty + '\''), 'g');
-          spaSource = spaSource.replace(re, '\'' + vMapper[vProperty] + '\'');
-        }
-      }
+      valueMapper.forEach(function(vElement) {
+        var re = new RegExp(escapeRegExp('\'' + vElement.name + '\''), 'g');
+        spaSource = spaSource.replace(re, '\'' + vElement.value + '\'');
+      });
 
       // Replace constant names.
-      for (var nProperty in nMapper) {
-        if (nMapper.hasOwnProperty(nProperty)) {
-          var re = new RegExp(escapeRegExp(nProperty), 'g');
-          spaSource = spaSource.replace(re, nMapper[nProperty]);
-        }
-      }
+      nameMapper.forEach(function(nElement) {
+        var re = new RegExp(escapeRegExp(nElement.name), 'g');
+        spaSource = spaSource.replace(re, nElement.value);
+      });
 
       // Write the compressed SPA source file.
       grunt.file.write(options.spaCompressed, spaSource);
@@ -122,8 +125,8 @@ module.exports = function(grunt) {
     }
 
     function readConstants (obj, level, parentName, nameMapper, valueMapper, fgOptions) {
-      //grunt.log.writeln('Mapping "' + parentName + '".');
       var constantText = '';
+
       for (var property in obj) {
         if (obj.hasOwnProperty(property)) {
           var value = obj[property];
@@ -131,16 +134,29 @@ module.exports = function(grunt) {
             var newName = generateName(ix);
             if (fgOptions.compressNameOnly) {
               constantText += '  ' + newName + ': \'' + value + '\',\n';
-              nameMapper[parentName + property] = fgOptions.constantObjectName + '.' + newName;
+              nameMapper.push({
+                name: parentName +property,
+                value: fgOptions.constantObjectName + '.' + newName
+              });
             } else {
-              valueMapper[value] = newName;
-              nameMapper[parentName + property] = '\'' + newName + '\'';
+              valueMapper.push({ name: value, value: newName });
+              nameMapper.push({
+                name: parentName +property,
+                value: '\'' + newName + '\''
+              });
               iy++
             }
             ix++;
           }
           if (typeof value === 'object') {
-            constantText += readConstants(value, level + 1, parentName + property + '.', nameMapper, valueMapper, fgOptions);
+            constantText += readConstants(
+              value,
+              level + 1,
+              parentName + property + '.',
+              nameMapper,
+              valueMapper,
+              fgOptions
+            );
           }
         }
       }

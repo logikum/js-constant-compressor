@@ -30,22 +30,6 @@ module.exports = function(grunt) {
 
     // Configuration to be run (and then tested).
     js_constant_compressor: {
-      default_options: {
-        options: {
-        },
-        files: {
-          'tmp/default_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
-      },
-      custom_options: {
-        options: {
-          separator: ': ',
-          punctuation: ' !!!'
-        },
-        files: {
-          'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123']
-        }
-      },
       work: {
         options: {
           spaSource: 'build/app.js',
@@ -95,5 +79,5 @@ module.exports = function(grunt) {
   grunt.registerTask('default', ['jshint', 'test']);
 
   // Development task:target.
-  grunt.registerTask('development', ['js_constant_compressor:work']);
+  grunt.registerTask('development', ['js_constant_compressor']);
 };
