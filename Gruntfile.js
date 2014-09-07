@@ -45,6 +45,30 @@ module.exports = function(grunt) {
         files: {
           'tmp/custom_options': ['test/fixtures/testing', 'test/fixtures/123']
         }
+      },
+      work: {
+        options: {
+          spaSource: 'build/app.js',
+          spaCompressed: 'build/app.compressed.js'
+        },
+        files: [
+          {
+            src: [
+              'source/MODULES.js',
+              'source/URLS.js'
+            ],
+            compressNameOnly: true,
+            constantObjectName: '_Z',
+            constantObjectPath: 'source/compressed.js'
+          },
+          {
+            src: [
+              'source/CONTROLLERS.js',
+              'source/VIEWS.js'
+            ],
+            compressNameOnly: false
+          }
+        ]
       }
     },
 
@@ -70,4 +94,6 @@ module.exports = function(grunt) {
   // By default, lint and run all tests.
   grunt.registerTask('default', ['jshint', 'test']);
 
+  // Development task:target.
+  grunt.registerTask('development', ['js_constant_compressor:work']);
 };
