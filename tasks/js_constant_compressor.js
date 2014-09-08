@@ -12,6 +12,13 @@ module.exports = function(grunt) {
   // Please see the Grunt documentation for more information regarding
   // task creation: http://gruntjs.com/creating-tasks
 
+  var MODE = {
+    doNothing: 0,
+    compressNamesOnly: 1,
+    compressNamesAndValues: 2,
+    replaceNamesWithValues: 3
+  };
+
   var nameMapper = [];
   var valueMapper = [];
   var ix = 0;
@@ -31,10 +38,28 @@ module.exports = function(grunt) {
     // Iterate over all specified file groups.
     this.files.forEach(function(fg) {
 
+      // Determine processing mode of the file group.
+      var mode;
+      switch (fg.mode) {
+        case 'compress-names-only':
+          mode = MODE.compressNamesOnly;
+          break;
+        case 'compress-names-and-values':
+          mode = MODE.compressNamesAndValues;
+          break;
+        case 'replace-names-with-values':
+          mode = MODE.replaceNamesWithValues;
+          break;
+        default:
+          mode = MODE.doNothing;
+          grunt.log.error('Invalid mode for file group: "' + fg.mode + '"');
+          grunt.fail.fatal('File groups require a valid mode: compress-names-only | compress-names-and-values | replace-names-with-values');
+      }
+
       var fgOptions = {
         constantObjectName: fg.constantObjectName == undefined ? '_Z' : fg.constantObjectName,
         constantObjectPath: fg.constantObjectPath == undefined ? 'compressed.ja' : fg.constantObjectPath,
-        compressNameOnly: fg.compressNameOnly == undefined ? true : fg.compressNameOnly
+        mode: mode
       };
 
       var constantText = '';
@@ -42,12 +67,11 @@ module.exports = function(grunt) {
       // Process specified files.
       var src = fg.src.filter(function(filepath) {
 
-        // Warn on and remove invalid source files (if nonull was set).
+        // Warn on and remove invalid source files (if no null was set).
         if (!grunt.file.exists(filepath)) {
           grunt.log.warn('Source file "' + filepath + '" not found.');
           return false;
         } else {
-          //grunt.log.writeln('Processing source file ' + filepath + '.');
           return true;
         }
 
@@ -63,18 +87,18 @@ module.exports = function(grunt) {
         var NAME = contents.slice(pos1 + 4, pos2).trim() + '.';
 
         // Process constant object.
-        eval('VALUE ' + contents.substr(contents.indexOf('=')));
+        eval('VALUE ' + contents.substr(pos2));
         if (typeof VALUE === 'object') {
           constantText += readConstants(VALUE, 0, NAME, nameMapper, valueMapper, fgOptions);
         } else {
-          grunt.log.warn('Source file ' + filepath + ' must contain an object.');
+          grunt.log.error('Source file ' + filepath + ' must contain an object.');
         }
 
         return '';
       }).join(grunt.util.normalizelf(', '));
 
       // Write the source file of the new constant object.
-      if (fgOptions.compressNameOnly) {
+      if (fgOptions.mode === MODE.compressNamesOnly) {
         constantText =
           'var ' + fgOptions.constantObjectName + ' = {\n' +
           constantText.slice(0, -2) +
@@ -90,7 +114,7 @@ module.exports = function(grunt) {
       grunt.log.warn('SPA source file "' + options.spaSource + '" not found.');
     } else {
 
-      // Sort mappers by values in revers order.
+      // Sort mappers by values in reverse order.
       valueMapper.sort(function (a, b) {
         if (a.name > b.name) { return -1; }
         if (a.name < b.name) { return 1; }
@@ -126,27 +150,63 @@ module.exports = function(grunt) {
 
     function readConstants (obj, level, parentName, nameMapper, valueMapper, fgOptions) {
       var constantText = '';
+      var newName = '';
 
       for (var property in obj) {
         if (obj.hasOwnProperty(property)) {
           var value = obj[property];
           if (typeof value === 'string') {
             var newName = generateName(ix);
-            if (fgOptions.compressNameOnly) {
-              constantText += '  ' + newName + ': \'' + value + '\',\n';
-              nameMapper.push({
-                name: parentName +property,
-                value: fgOptions.constantObjectName + '.' + newName
-              });
-            } else {
-              valueMapper.push({ name: value, value: newName });
-              nameMapper.push({
-                name: parentName +property,
-                value: '\'' + newName + '\''
-              });
-              iy++
+            switch (fgOptions.mode) {
+              case MODE.compressNamesOnly:
+                newName = generateName(ix);
+                constantText += '    ' + newName + ': \'' + value + '\',\n';
+                nameMapper.push({
+                  name: parentName + property,
+                  value: fgOptions.constantObjectName + '.' + newName
+                });
+                ix++;
+                break;
+              case MODE.compressNamesAndValues:
+                newName = generateName(ix);
+                valueMapper.push({ name: value, value: newName });
+                nameMapper.push({
+                  name: parentName + property,
+                  value: '\'' + newName + '\''
+                });
+                iy++;
+                ix++;
+                break;
+              case MODE.replaceNamesWithValues:
+                nameMapper.push({
+                  name: parentName + property,
+                  value: '\'' + value + '\''
+                });
+                ix++;
+                break;
+              default:
             }
-            ix++;
+          }
+          if (typeof value === 'number') {
+            switch (fgOptions.mode) {
+              case MODE.compressNamesOnly:
+                newName = generateName(ix);
+                constantText += '    ' + newName + ': ' + value + ',\n';
+                nameMapper.push({
+                  name: parentName + property,
+                  value: fgOptions.constantObjectName + '.' + newName
+                });
+                ix++;
+                break;
+              case MODE.replaceNamesWithValues:
+                nameMapper.push({
+                  name: parentName + property,
+                  value: value
+                });
+                ix++;
+                break;
+              default:
+            }
           }
           if (typeof value === 'object') {
             constantText += readConstants(
@@ -179,6 +239,7 @@ module.exports = function(grunt) {
     function escapeRegExp(str) {
       return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
     }
+
   });
 
 };

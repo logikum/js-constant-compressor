@@ -41,8 +41,8 @@ module.exports = function(grunt) {
               'source/MODULES.js',
               'source/URLS.js'
             ],
-            compressNameOnly: true,
-            constantObjectName: '_Z',
+            mode: 'compress-names-only',
+            constantObjectName: 'C',
             constantObjectPath: 'source/compressed.js'
           },
           {
@@ -50,7 +50,14 @@ module.exports = function(grunt) {
               'source/CONTROLLERS.js',
               'source/VIEWS.js'
             ],
-            compressNameOnly: false
+            mode: 'compress-names-and-values'
+          },
+          {
+            src: [
+              'source/IMG__REF_TYPE.js',
+              'source/REGION_TYPE.js'
+            ],
+            mode: 'replace-names-with-values'
           }
         ]
       }
