@@ -1,6 +1,6 @@
 # js-constant-compressor
 
-> Replaces JavaScript constants stored in JSON objects with short names and values.
+> Replaces JavaScript constants stored in objects with short names and values.
 
 ## Getting Started
 This plugin requires Grunt `~0.4.5`
@@ -14,7 +14,7 @@ npm install js-constant-compressor --save-dev
 Once the plugin has been installed, it may be enabled inside your Gruntfile with this line of JavaScript:
 
 ```js
-grunt.loadNpmTasks('js-constant-compressor');
+grunt.loadNpmTasks('js_const_min');
 ```
 
 ## The "js_constant_compressor" task
@@ -83,7 +83,7 @@ grunt.initConfig({
 ```
 
 ## Contributing
-In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
+In lieu of a formal style guide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
 
 ## Release History
 _(Nothing yet)_

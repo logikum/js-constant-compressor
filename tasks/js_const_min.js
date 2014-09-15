@@ -25,8 +25,8 @@ module.exports = function(grunt) {
   var iy = 0;
 
   grunt.registerMultiTask(
-    'js_constant_compressor',
-    'Replaces JavaScript constants stored in JSON objects with short names and values.',
+    'js_const_min',
+    'Replaces JavaScript constants stored in objects with short names and values.',
     function() {
 
       // Merge task-specific and/or target-specific options with these defaults.
