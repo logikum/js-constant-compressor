@@ -1,7 +1,7 @@
 {
   "name": "js-constant-compressor",
   "description": "Replaces JavaScript constants stored in JSON objects with short names and values.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/marmarosi/js-constant-compressor",
   "author": {
     "name": "Mármarosi József",
