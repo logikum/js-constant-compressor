@@ -1,23 +1,23 @@
 {
   "name": "js-constant-compressor",
   "description": "Replaces JavaScript constants stored in JSON objects with short names and values.",
-  "version": "0.1.1",
-  "homepage": "https://github.com/marmarosi/js-constant-compressor",
+  "version": "0.1.2",
+  "homepage": "https://github.com/logikum/js-constant-compressor",
   "author": {
-    "name": "Mármarosi József",
-    "email": "marmarosi@logikum.hu"
+    "name": "Logikum, Ltd.",
+    "email": "logikum@logikum.hu"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/marmarosi/js-constant-compressor.git"
+    "url": "git://github.com/logikum/js-constant-compressor.git"
   },
   "bugs": {
-    "url": "https://github.com/marmarosi/js-constant-compressor/issues"
+    "url": "https://github.com/logikum/js-constant-compressor/issues"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/marmarosi/js-constant-compressor/blob/master/LICENSE-MIT"
+      "url": "https://github.com/logikum/js-constant-compressor/blob/master/LICENSE-MIT"
     }
   ],
   "engines": {
